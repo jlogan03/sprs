@@ -74,12 +74,14 @@ fn main() {
 
         let amd_files = get_source_files(PathBuf::from("SuiteSparse/AMD/Source"));
 
-        let mut cholmod_files = get_source_files(PathBuf::from("SuiteSparse/CHOLMOD/Cholesky"));
+        let mut cholmod_files = get_source_files(PathBuf::from("SuiteSparse/CHOLMOD/Core"));
+        cholmod_files.append(&mut get_source_files(PathBuf::from("SuiteSparse/CHOLMOD/Check")));
+        cholmod_files.append(&mut get_source_files(PathBuf::from("SuiteSparse/CHOLMOD/Cholesky")));
         cholmod_files.append(&mut get_source_files(PathBuf::from("SuiteSparse/CHOLMOD/Partition")));
         cholmod_files.append(&mut get_source_files(PathBuf::from("SuiteSparse/CHOLMOD/Modify")));
+        cholmod_files.append(&mut get_source_files(PathBuf::from("SuiteSparse/CHOLMOD/MatrixOps")));
         cholmod_files.append(&mut get_source_files(PathBuf::from("SuiteSparse/CHOLMOD/Supernodal")));
         cholmod_files.append(&mut get_source_files(PathBuf::from("SuiteSparse/CHOLMOD/GPU")));
-        cholmod_files.append(&mut get_source_files(PathBuf::from("SuiteSparse/CHOLMOD/MatrixOps")));
 
         let umfpack_files = get_source_files(PathBuf::from("SuiteSparse/UMFPACK/Source"));
 
@@ -117,14 +119,36 @@ fn main() {
             .object(PathBuf::from(&root).join("SuiteSparse/AMD/Source/di_amd_valid.o"))
             .compile("amd");
 
+        // Build COLAMD
+        //    Double-Int version
+        cc::Build::new()
+            .include("SuiteSparse/SuiteSparse_config")
+            .include("SuiteSparse/COlAMD/Include")
+            .file("SuiteSparse/COLAMD/Source/colamd.c")
+            .compile("colamd");
+        add_object_file_prefixes(PathBuf::from(&root).join("SuiteSparse/COLAMD/Source/").to_str().unwrap(), "di_");
+
+        //    Double-Long version & combine with double-int
+        cc::Build::new()
+            .include("SuiteSparse/SuiteSparse_config")
+            .include("SuiteSparse/COlAMD/Include")
+            .file("SuiteSparse/COLAMD/Source/colamd.c")
+            .define("DLONG", None)
+            .object(PathBuf::from(&root).join("SuiteSparse/COLAMD/Source/di_colamd.o"))
+            .compile("colamd");
+
         // Build CHOLMOD
         //    Double-Int version
         cc::Build::new()
             .include("SuiteSparse/SuiteSparse_config")
             .include("SuiteSparse/CHOLMOD/Include")
+            .include("SuiteSparse/AMD/Include")
+            .include("SuiteSparse/COLAMD/Include")
+            .include("SuiteSparse/include")
+            .include("SuiteSparse/AMD/Source")
+
             .files(&cholmod_files)
-            .compile("cholmodi");
-        // copy_file("SuiteSparse/CHOLMOD/Source/cholmod.o", "cholmod_di.o");
+            .compile("cholmod");
 
         //    Double-Long version & combine with double-int
         cc::Build::new()
