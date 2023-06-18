@@ -1,5 +1,7 @@
 use std::path::{PathBuf, Path};
 
+use cmake;
+
 fn main() {
     println!("cargo:rerun-if-changed=build.rs");
     let root = std::env::var_os("OUT_DIR").unwrap();
@@ -17,7 +19,7 @@ fn main() {
             .file("SuiteSparse/CAMD/Source/camd_control.c")
             .file("SuiteSparse/CAMD/Source/camd_defaults.c")
             .file("SuiteSparse/CAMD/Source/camd_dump.c")
-            .file("SuiteSparse/CAMD/Source/camd_global.c")
+            // .file("SuiteSparse/CAMD/Source/camd_global.c")
             .file("SuiteSparse/CAMD/Source/camd_info.c")
             .file("SuiteSparse/CAMD/Source/camd_order.c")
             .file("SuiteSparse/CAMD/Source/camd_postorder.c")
@@ -34,7 +36,7 @@ fn main() {
             .file("SuiteSparse/CAMD/Source/camd_control.c")
             .file("SuiteSparse/CAMD/Source/camd_defaults.c")
             .file("SuiteSparse/CAMD/Source/camd_dump.c")
-            .file("SuiteSparse/CAMD/Source/camd_global.c")
+            // .file("SuiteSparse/CAMD/Source/camd_global.c")
             .file("SuiteSparse/CAMD/Source/camd_info.c")
             .file("SuiteSparse/CAMD/Source/camd_order.c")
             .file("SuiteSparse/CAMD/Source/camd_postorder.c")
@@ -72,115 +74,124 @@ fn main() {
     if cfg!(feature = "umfpack") {
         suitesparse_config = true;
 
-        let amd_files = get_source_files(PathBuf::from("SuiteSparse/AMD/Source"));
+        // let amd_files = get_source_files(PathBuf::from("SuiteSparse/AMD/Source"));
 
-        let mut cholmod_files = get_source_files(PathBuf::from("SuiteSparse/CHOLMOD/Core"));
-        cholmod_files.append(&mut get_source_files(PathBuf::from("SuiteSparse/CHOLMOD/Check")));
-        cholmod_files.append(&mut get_source_files(PathBuf::from("SuiteSparse/CHOLMOD/Cholesky")));
-        cholmod_files.append(&mut get_source_files(PathBuf::from("SuiteSparse/CHOLMOD/Partition")));
-        cholmod_files.append(&mut get_source_files(PathBuf::from("SuiteSparse/CHOLMOD/Modify")));
-        cholmod_files.append(&mut get_source_files(PathBuf::from("SuiteSparse/CHOLMOD/MatrixOps")));
-        cholmod_files.append(&mut get_source_files(PathBuf::from("SuiteSparse/CHOLMOD/Supernodal")));
-        cholmod_files.append(&mut get_source_files(PathBuf::from("SuiteSparse/CHOLMOD/GPU")));
+        // let mut cholmod_files = get_source_files(PathBuf::from("SuiteSparse/CHOLMOD/Core"));
+        // cholmod_files.append(&mut get_source_files(PathBuf::from("SuiteSparse/CHOLMOD/Check")));
+        // cholmod_files.append(&mut get_source_files(PathBuf::from("SuiteSparse/CHOLMOD/Cholesky")));
+        // cholmod_files.append(&mut get_source_files(PathBuf::from("SuiteSparse/CHOLMOD/Partition")));
+        // cholmod_files.append(&mut get_source_files(PathBuf::from("SuiteSparse/CHOLMOD/Modify")));
+        // cholmod_files.append(&mut get_source_files(PathBuf::from("SuiteSparse/CHOLMOD/MatrixOps")));
+        // cholmod_files.append(&mut get_source_files(PathBuf::from("SuiteSparse/CHOLMOD/Supernodal")));
+        // cholmod_files.append(&mut get_source_files(PathBuf::from("SuiteSparse/CHOLMOD/GPU")));
 
-        let umfpack_files = get_source_files(PathBuf::from("SuiteSparse/UMFPACK/Source"));
+        // let umfpack_files = get_source_files(PathBuf::from("SuiteSparse/UMFPACK/Source"));
 
-        // Build AMD
-        //    Double-Int version
-        cc::Build::new()
-            .include("SuiteSparse/SuiteSparse_config")
-            .include("SuiteSparse/AMD/Include")
-            .files(&amd_files)
-            // .define("DINT", None)
-            .compile("amd");
+        // // Build AMD
+        // //    Double-Int version
+        // cc::Build::new()
+        //     .include("SuiteSparse/SuiteSparse_config")
+        //     .include("SuiteSparse/AMD/Include")
+        //     .files(&amd_files)
+        //     // .define("DINT", None)
+        //     .compile("amd");
 
-        let objs = get_files_of_kind(PathBuf::from(&root).join("SuiteSparse/AMD/Source"), "o");
-        println!("{objs:?}");
-        add_object_file_prefixes(PathBuf::from(&root).join("SuiteSparse/AMD/Source").to_str().unwrap(), "di_");
+        // let objs = get_files_of_kind(PathBuf::from(&root).join("SuiteSparse/AMD/Source"), "o");
+        // println!("{objs:?}");
+        // add_object_file_prefixes(PathBuf::from(&root).join("SuiteSparse/AMD/Source").to_str().unwrap(), "di_");
 
-        //    Double-Long version & combine with double-int
-        cc::Build::new()
-            .include("SuiteSparse/SuiteSparse_config")
-            .include("SuiteSparse/AMD/Include")
-            .files(&amd_files)
-            .define("DLONG", None)
-            .object(PathBuf::from(&root).join("SuiteSparse/AMD/Source/di_amd_1.o"))
-            .object(PathBuf::from(&root).join("SuiteSparse/AMD/Source/di_amd_2.o"))
-            .object(PathBuf::from(&root).join("SuiteSparse/AMD/Source/di_amd_aat.o"))
-            .object(PathBuf::from(&root).join("SuiteSparse/AMD/Source/di_amd_control.o"))
-            .object(PathBuf::from(&root).join("SuiteSparse/AMD/Source/di_amd_defaults.o"))
-            .object(PathBuf::from(&root).join("SuiteSparse/AMD/Source/di_amd_dump.o"))
-            .object(PathBuf::from(&root).join("SuiteSparse/AMD/Source/di_amd_global.o"))
-            .object(PathBuf::from(&root).join("SuiteSparse/AMD/Source/di_amd_info.o"))
-            .object(PathBuf::from(&root).join("SuiteSparse/AMD/Source/di_amd_order.o"))
-            .object(PathBuf::from(&root).join("SuiteSparse/AMD/Source/di_amd_post_tree.o"))
-            .object(PathBuf::from(&root).join("SuiteSparse/AMD/Source/di_amd_postorder.o"))
-            .object(PathBuf::from(&root).join("SuiteSparse/AMD/Source/di_amd_preprocess.o"))
-            .object(PathBuf::from(&root).join("SuiteSparse/AMD/Source/di_amd_valid.o"))
-            .compile("amd");
+        // //    Double-Long version & combine with double-int
+        // cc::Build::new()
+        //     .include("SuiteSparse/SuiteSparse_config")
+        //     .include("SuiteSparse/AMD/Include")
+        //     .files(&amd_files)
+        //     .define("DLONG", None)
+        //     .object(PathBuf::from(&root).join("SuiteSparse/AMD/Source/di_amd_1.o"))
+        //     .object(PathBuf::from(&root).join("SuiteSparse/AMD/Source/di_amd_2.o"))
+        //     .object(PathBuf::from(&root).join("SuiteSparse/AMD/Source/di_amd_aat.o"))
+        //     .object(PathBuf::from(&root).join("SuiteSparse/AMD/Source/di_amd_control.o"))
+        //     .object(PathBuf::from(&root).join("SuiteSparse/AMD/Source/di_amd_defaults.o"))
+        //     .object(PathBuf::from(&root).join("SuiteSparse/AMD/Source/di_amd_dump.o"))
+        //     .object(PathBuf::from(&root).join("SuiteSparse/AMD/Source/di_amd_global.o"))
+        //     .object(PathBuf::from(&root).join("SuiteSparse/AMD/Source/di_amd_info.o"))
+        //     .object(PathBuf::from(&root).join("SuiteSparse/AMD/Source/di_amd_order.o"))
+        //     .object(PathBuf::from(&root).join("SuiteSparse/AMD/Source/di_amd_post_tree.o"))
+        //     .object(PathBuf::from(&root).join("SuiteSparse/AMD/Source/di_amd_postorder.o"))
+        //     .object(PathBuf::from(&root).join("SuiteSparse/AMD/Source/di_amd_preprocess.o"))
+        //     .object(PathBuf::from(&root).join("SuiteSparse/AMD/Source/di_amd_valid.o"))
+        //     .compile("amd");
 
-        // Build COLAMD
-        //    Double-Int version
-        cc::Build::new()
-            .include("SuiteSparse/SuiteSparse_config")
-            .include("SuiteSparse/COlAMD/Include")
-            .file("SuiteSparse/COLAMD/Source/colamd.c")
-            .compile("colamd");
-        add_object_file_prefixes(PathBuf::from(&root).join("SuiteSparse/COLAMD/Source/").to_str().unwrap(), "di_");
+        // // Build COLAMD
+        // //    Double-Int version
+        // cc::Build::new()
+        //     .include("SuiteSparse/SuiteSparse_config")
+        //     .include("SuiteSparse/COlAMD/Include")
+        //     .file("SuiteSparse/COLAMD/Source/colamd.c")
+        //     .compile("colamd");
+        // add_object_file_prefixes(PathBuf::from(&root).join("SuiteSparse/COLAMD/Source/").to_str().unwrap(), "di_");
 
-        //    Double-Long version & combine with double-int
-        cc::Build::new()
-            .include("SuiteSparse/SuiteSparse_config")
-            .include("SuiteSparse/COlAMD/Include")
-            .file("SuiteSparse/COLAMD/Source/colamd.c")
-            .define("DLONG", None)
-            .object(PathBuf::from(&root).join("SuiteSparse/COLAMD/Source/di_colamd.o"))
-            .compile("colamd");
+        // //    Double-Long version & combine with double-int
+        // cc::Build::new()
+        //     .include("SuiteSparse/SuiteSparse_config")
+        //     .include("SuiteSparse/COlAMD/Include")
+        //     .file("SuiteSparse/COLAMD/Source/colamd.c")
+        //     .define("DLONG", None)
+        //     .object(PathBuf::from(&root).join("SuiteSparse/COLAMD/Source/di_colamd.o"))
+        //     .compile("colamd");
 
-        // Build CHOLMOD
-        //    Double-Int version
-        cc::Build::new()
-            .include("SuiteSparse/SuiteSparse_config")
-            .include("SuiteSparse/CHOLMOD/Include")
-            .include("SuiteSparse/AMD/Include")
-            .include("SuiteSparse/COLAMD/Include")
-            .include("SuiteSparse/include")
-            .include("SuiteSparse/AMD/Source")
+        // // Build CHOLMOD
+        // println!("cargo:rustc-link-lib=blas");
+        // println!("cargo:rustc-link-lib=lapack");
+        // //    Double-Int version
+        // cc::Build::new()
+        //     .include("SuiteSparse/SuiteSparse_config")
+        //     // .include("SuiteSparse/AMD/Include")
+        //     // .include(PathBuf::from(&root).join("SuiteSparse/AMD/Source"))
+        //     // .include("SuiteSparse/COLAMD/Include")
+        //     .object(PathBuf::from(&root).join("SuiteSparse/AMD/Source/libamd.a"))
+        //     .object(PathBuf::from(&root).join("SuiteSparse/AMD/Source/amd.o"))
+        //     // .define("DINT", None)
+        //     .include("SuiteSparse/CHOLMOD/Include")
+        //     .include("SuiteSparse/CHOLMOD/Include/cholmod.h")
+        //     .files(&cholmod_files)
+        //     .compile("cholmod");
 
-            .files(&cholmod_files)
-            .compile("cholmod");
 
-        //    Double-Long version & combine with double-int
-        cc::Build::new()
-            .include("SuiteSparse/SuiteSparse_config")
-            .include("SuiteSparse/CHOLMOD/Include")
-            .files(&cholmod_files)
-            .define("DLONG", None)
-            .object("SuiteSparse/CHOLMOD/Source/cholmod_di.o")
-            .compile("cholmod");
+        // //    Double-Long version & combine with double-int
+        // cc::Build::new()
+        //     .include("SuiteSparse/SuiteSparse_config")
+        //     .include("SuiteSparse/CHOLMOD/Include")
+        //     .files(&cholmod_files)
+        //     .define("DLONG", None)
+        //     .object(PathBuf::from(&root).join("SuiteSparse/CHOLMOD/Source/di_cholmod.o"))
+        //     .compile("cholmod");
 
-        // Build UMFPACK
-        //    Double-Int version
-        cc::Build::new()
-            .include("SuiteSparse/SuiteSparse_config")
-            .include("SuiteSparse/UMFPACK/Include")
-            .files(&umfpack_files)
-            .object("SuiteSparse/AMD/Source/amd.o")
-            .object("SuiteSparse/CHOLMOD/Source/cholmod.o")
-            .define("DINT", None)
-            .compile("umfpacki");
-        // copy_file("SuiteSparse/UMFPACK/Source/umfpack.o", "umfpack_di.o");
+        // // Build UMFPACK
+        // //    Double-Int version
+        // cc::Build::new()
+        //     .include("SuiteSparse/SuiteSparse_config")
+        //     .include("SuiteSparse/UMFPACK/Include")
+        //     .files(&umfpack_files)
+        //     .object("SuiteSparse/AMD/Source/amd.o")
+        //     .object("SuiteSparse/CHOLMOD/Source/cholmod.o")
+        //     // .define("DINT", None)
+        //     .compile("umfpack");
+        // add_object_file_prefixes(PathBuf::from(&root).join("SuiteSparse/UMFPACK/Source/").to_str().unwrap(), "di_");
+        // // copy_file("SuiteSparse/UMFPACK/Source/umfpack.o", "umfpack_di.o");
 
-        //    Double-Long version & combine with double-int
-        cc::Build::new()
-            .include("SuiteSparse/SuiteSparse_config")
-            .include("SuiteSparse/UMFPACK/Include")
-            .files(&umfpack_files)
-            .object("SuiteSparse/AMD/Source/amd.o")
-            .object("SuiteSparse/CHOLMOD/Source/cholmod.o")
-            .object("SuiteSparse/UMFPACK/Source/umfpack_di.o")
-            .define("DLONG", None)
-            .compile("umfpack");
+        // //    Double-Long version & combine with double-int
+        // cc::Build::new()
+        //     .include("SuiteSparse/SuiteSparse_config")
+        //     .include("SuiteSparse/UMFPACK/Include")
+        //     .files(&umfpack_files)
+        //     .object("SuiteSparse/AMD/Source/amd.o")
+        //     .object("SuiteSparse/CHOLMOD/Source/cholmod.o")
+        //     .object("SuiteSparse/UMFPACK/Source/di_umfpack.o")
+        //     .define("DLONG", None)
+        //     .compile("umfpack");
+
+        // cmake::Config::new("SuiteSparse").
+
 
     }
     if suitesparse_config {
