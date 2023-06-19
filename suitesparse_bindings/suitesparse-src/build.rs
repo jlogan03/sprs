@@ -1,4 +1,4 @@
-use std::path::{PathBuf, Path};
+use std::path::{Path, PathBuf};
 
 use cmake;
 
@@ -156,7 +156,6 @@ fn main() {
         //     .files(&cholmod_files)
         //     .compile("cholmod");
 
-
         // //    Double-Long version & combine with double-int
         // cc::Build::new()
         //     .include("SuiteSparse/SuiteSparse_config")
@@ -190,9 +189,9 @@ fn main() {
         //     .define("DLONG", None)
         //     .compile("umfpack");
 
-        // cmake::Config::new("SuiteSparse").
-
-
+        cmake::Config::new("SuiteSparse/UMFPACK")
+            .out_dir("SuiteSparse/UMFPACK/build")
+            .build();
     }
     if suitesparse_config {
         cc::Build::new()
@@ -219,11 +218,11 @@ fn get_files_of_kind(dir: PathBuf, kind: &str) -> Vec<PathBuf> {
 }
 
 fn get_source_files(dir: PathBuf) -> Vec<PathBuf> {
-    return get_files_of_kind(dir, "c")
+    return get_files_of_kind(dir, "c");
 }
 
 fn get_object_files(dir: PathBuf) -> Vec<PathBuf> {
-    return get_files_of_kind(dir, "o")
+    return get_files_of_kind(dir, "o");
 }
 
 /// Copy object files in a directory, adding prefixes

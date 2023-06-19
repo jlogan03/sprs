@@ -12,12 +12,12 @@ readme = "README.md"
 repository = "https://github.com/sparsemat/sprs"
 description = "Builds the SuiteSparse components"
 exclude = [
-    # "SuiteSparse/AMD/",
+    "SuiteSparse/AMD/",
     "SuiteSparse/bin/",
     "SuiteSparse/BTF/",
     "SuiteSparse/CCOLAMD/",
-    # "SuiteSparse/CHOLMOD/",
-    # "SuiteSparse/COLAMD/",
+    "SuiteSparse/CHOLMOD/",
+    "SuiteSparse/COLAMD/",
     "SuiteSparse/CSparse/",
     "SuiteSparse/CSparse_to_CXSparse/",
     "SuiteSparse/CXSparse/",
